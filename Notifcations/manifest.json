@@ -1,7 +1,7 @@
 {
   "name": "Client Notification Sim",
   "short_name": "SimNotify",
-  "start_url": "/index.html",
+  "start_url": "https://newagent2025.github.io/WebsiteDemo/Notifcations/index.html",
   "display": "standalone",
   "background_color": "#0f1724",
   "theme_color": "#1a1a2e",
@@ -10,3 +10,4 @@
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
+
