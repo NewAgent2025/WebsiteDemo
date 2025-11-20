@@ -40,8 +40,29 @@ button {
 <button id="send">Send Notification</button>
 
 <!-- Audio element for sound -->
+<button id="send">Send Notification + Sound</button>
 <audio id="notifSound" src="notification.mp3" preload="auto"></audio>
 
+<script>
+document.getElementById("send").onclick = async () => {
+
+    // Show notification (will still use default sound on iOS)
+    if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.ready;
+        reg.showNotification("Hello!", {
+            body: "Custom sound will play manually",
+            icon: "icon.png"
+        });
+    }
+
+    // Play custom sound manually
+    const audio = document.getElementById("notifSound");
+    audio.play().catch(e => console.log("Sound play blocked:", e));
+};
+</script>
+
+
+    
 <script>
 // Register service worker
 if ("serviceWorker" in navigator) {
@@ -77,3 +98,4 @@ document.getElementById("send").onclick = async () => {
 
 </body>
 </html>
+
