@@ -1,225 +1,51 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Client-only Notification Demo</title>
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1a1a2e" />
-  <style>
-    :root { --bg:#0f1724; --fg:#e6eef8; --muted:#9fb0c8; --accent:#7c3aed; }
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto; background:var(--bg); color:var(--fg); margin:0; padding:28px;}
-    h1{margin:0 0 12px}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent); padding:18px; border-radius:12px; max-width:720px;}
-    button{padding:10px 14px; margin:8px 6px 8px 0; border-radius:8px; border:0; cursor:pointer; background:var(--accent); color:white; font-weight:600;}
-    .muted{color:var(--muted); font-size:0.95rem}
-    label{display:block; margin-top:12px}
-    input[type="number"]{padding:8px; border-radius:8px; border:1px solid #223; background:#0b1220; color:var(--fg)}
-    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-  </style>
+<meta charset="UTF-8">
+
+<!-- iPhone Fullscreen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="MyApp">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Home Screen Icon -->
+<link rel="apple-touch-icon" href="icon.png">
+
+<title>My iPhone App</title>
+
+<style>
+body {
+    background: #151515;
+    color: white;
+    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+button {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 10px;
+    font-size: 20px;
+    background: #6a4cff;
+    color: white;
+}
+</style>
 </head>
+
 <body>
-  <div class="card">
-    <h1>Client-side Notification Simulator</h1>
-    <p class="muted">No PHP. No server. Press subscribe, then send simulated notifications or schedule repeated ones. Add to Home Screen for app-like behavior.</p>
-
-    <div style="margin-top:12px;">
-      <button id="btn-sub">Enable Notifications</button>
-      <button id="btn-unsub" disabled>Unsubscribe (clear)</button>
-      <button id="btn-send" disabled>Send Now</button>
-      <button id="btn-schedule" disabled>Schedule Every 15s</button>
-      <button id="btn-stop" disabled>Stop Scheduled</button>
-      <button id="btn-add" style="background:#2b7a78">Tell Me How to A2HS</button>
-    </div>
-
-    <label>
-      Notification title
-      <input id="notif-title" value="Hey! You've got a message" style="width:100%; margin-top:6px;"/>
-    </label>
-
-    <label>
-      Notification body
-      <input id="notif-body" value="This notification was generated locally — no server required." style="width:100%; margin-top:6px;"/>
-    </label>
-
-    <label class="row">
-      Badge count
-      <input id="badge-count" type="number" min="0" value="1" style="width:90px;"/>
-      <small class="muted">Will try to set app badge if supported; otherwise title will show count.</small>
-    </label>
-
-    <div style="margin-top:14px;">
-      <strong>Status:</strong> <span id="status">Not subscribed</span>
-    </div>
-  </div>
+<h1>This runs like an iPhone app</h1>
 
 <script>
-const btnSub = document.getElementById('btn-sub');
-const btnUnsub = document.getElementById('btn-unsub');
-const btnSend = document.getElementById('btn-send');
-const btnSchedule = document.getElementById('btn-schedule');
-const btnStop = document.getElementById('btn-stop');
-const btnAdd = document.getElementById('btn-add');
-
-const statusEl = document.getElementById('status');
-const titleInput = document.getElementById('notif-title');
-const bodyInput = document.getElementById('notif-body');
-const badgeInput = document.getElementById('badge-count');
-
-let scheduledId = null;
-let localSub = false; // local subscription flag (client-only)
-let scheduledInterval = 15000; // ms
-
-// register service worker
-async function registerSW() {
-  if ('serviceWorker' in navigator) {
-    try {
-      const reg = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('SW registered', reg);
-      return reg;
-    } catch (e) {
-      console.error('SW reg failed', e);
-    }
-  } else {
-    alert('Service workers not supported in this browser.');
-  }
+// Register Service Worker for PWA
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
 }
-
-function setStatus(s) {
-  statusEl.textContent = s;
-}
-
-// ask permission and enable "subscription"
-btnSub.addEventListener('click', async () => {
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      setStatus('Permission denied');
-      return;
-    }
-    await registerSW();
-    // mark local subscription
-    localSub = true;
-    localStorage.setItem('sim_subscribed', '1');
-    btnUnsub.disabled = false;
-    btnSend.disabled = false;
-    btnSchedule.disabled = false;
-    setStatus('Subscribed (local)');
-  } catch (err) {
-    console.error(err);
-    setStatus('Error subscribing');
-  }
-});
-
-window.addEventListener('load', async () => {
-  if (localStorage.getItem('sim_subscribed') === '1') {
-    // preload: register SW and restore UI
-    await registerSW();
-    localSub = true;
-    btnUnsub.disabled = false;
-    btnSend.disabled = false;
-    btnSchedule.disabled = false;
-    setStatus('Subscribed (local)');
-  }
-});
-
-// Unsubscribe (local-only)
-btnUnsub.addEventListener('click', async () => {
-  localSub = false;
-  localStorage.removeItem('sim_subscribed');
-  btnUnsub.disabled = true;
-  btnSend.disabled = true;
-  btnSchedule.disabled = true;
-  setStatus('Not subscribed');
-  // clear badge
-  if ('clearAppBadge' in navigator || navigator.clearAppBadge) {
-    try { await navigator.clearAppBadge?.(); } catch (e) { /* ignore */ }
-  }
-  document.title = document.title.replace(/^\(\d+\)\s*/, '');
-});
-
-// Send a notification now (client-side)
-btnSend.addEventListener('click', async () => {
-  if (!localSub) { alert('Subscribe first'); return; }
-  const payload = {
-    title: titleInput.value || 'Notification',
-    body: bodyInput.value || '',
-    url: '/',
-    badgeCount: Number(badgeInput.value) || 1
-  };
-  // send message to service worker to display notification
-  const reg = await navigator.serviceWorker.ready;
-  reg.active.postMessage({cmd:'show-notification', payload});
-  setStatus('Notification sent (local)');
-  updateBadge(payload.badgeCount);
-});
-
-// schedule recurring notifications
-btnSchedule.addEventListener('click', async () => {
-  if (!localSub) { alert('Subscribe first'); return; }
-  if (scheduledId !== null) { alert('Already scheduled'); return; }
-  // schedule using setInterval in the page (works while page or PWA is running)
-  scheduledId = setInterval(async () => {
-    const payload = {
-      title: titleInput.value,
-      body: bodyInput.value + ' (scheduled)',
-      url: '/',
-      badgeCount: Number(badgeInput.value) || 1
-    };
-    const reg = await navigator.serviceWorker.ready;
-    reg.active.postMessage({cmd:'show-notification', payload});
-    updateBadge(payload.badgeCount);
-    setStatus('Last scheduled: ' + new Date().toLocaleTimeString());
-  }, scheduledInterval);
-  btnStop.disabled = false;
-  btnSchedule.disabled = true;
-  setStatus('Scheduling every ' + (scheduledInterval/1000) + 's');
-});
-
-// stop schedule
-btnStop.addEventListener('click', () => {
-  if (scheduledId) {
-    clearInterval(scheduledId);
-    scheduledId = null;
-    btnStop.disabled = true;
-    btnSchedule.disabled = false;
-    setStatus('Scheduled stopped');
-  }
-});
-
-// badge helper: use Badging API if available, fallback to title prefix
-async function updateBadge(count) {
-  try {
-    if ('setAppBadge' in navigator) {
-      await navigator.setAppBadge(count);
-    } else if ('setExperimentalAppBadge' in navigator) {
-      await navigator.setExperimentalAppBadge(count);
-    } else {
-      // fallback: prefix document.title
-      const base = document.title.replace(/^\(\d+\)\s*/, '');
-      if (count > 0) document.title = `(${count}) ${base}`;
-      else document.title = base;
-    }
-  } catch (e) {
-    // ignore failures
-    console.warn('Badge failed', e);
-  }
-}
-
-// "Add to Home Screen" hint
-btnAdd.addEventListener('click', () => {
-  alert('On iPhone: open this page in Safari, tap Share → Add to Home Screen. Then open it from the Home Screen to get app-like behavior.');
-});
-
-// listen to messages from SW (optional)
-navigator.serviceWorker?.addEventListener('message', (e) => {
-  if (e.data && e.data.type === 'notification-clicked') {
-    setStatus('Notification clicked: ' + (e.data.url || '/'));
-    // focus or open a page
-    window.focus();
-    if (e.data.url) window.location.href = e.data.url;
-  }
-});
 </script>
+
 </body>
 </html>
