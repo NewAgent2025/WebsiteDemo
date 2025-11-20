@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 
-<title>5 Notifications + Sound</title>
+<title>Notifications + Custom Sound</title>
 
 <style>
 body {
@@ -33,22 +33,22 @@ button {
 </head>
 <body>
 
-<h1>Send 5 Notifications + Sound</h1>
+<h1>Send 5 Notifications + Custom Sound</h1>
 
 <button id="ask">Enable Notifications</button>
 <br>
 <button id="send">Send 5 Notifications</button>
 
-<!-- Audio element -->
+<!-- Audio element for custom sound -->
 <audio id="notifSound" src="notification.mp3" preload="auto"></audio>
 
 <script>
-// Register service worker
+// Register Service Worker
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
 
-// Ask for permission
+// Request Notification Permission
 document.getElementById("ask").onclick = async () => {
     const perm = await Notification.requestPermission();
     if (perm === "granted") {
@@ -58,25 +58,26 @@ document.getElementById("ask").onclick = async () => {
     }
 };
 
-// Send 5 notifications with sound
+// Send 5 Notifications
 document.getElementById("send").onclick = async () => {
     const reg = await navigator.serviceWorker.ready;
     const audio = document.getElementById("notifSound");
 
     for (let i = 1; i <= 5; i++) {
-        // Show notification
+
+        // Play custom sound (foreground only)
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log("Sound blocked", e));
+
+        // Show notification (background uses default iOS sound)
         reg.showNotification(`Notification ${i}`, {
             body: `This is notification number ${i}`,
             icon: "icon.png",
             badge: "icon.png"
         });
 
-        // Play sound
-        audio.currentTime = 0; // restart sound
-        audio.play().catch(e => console.log("Sound blocked", e));
-
-        // Wait 1 second between each notification
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait 2 seconds between notifications
+        await new Promise(resolve => setTimeout(resolve, 2000));
     }
 };
 </script>
