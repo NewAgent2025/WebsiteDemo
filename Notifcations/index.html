@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
 
-<!-- Fullscreen iPhone App -->
+<!-- iPhone Fullscreen -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 
-<title>iPhone App Notifications + Sound</title>
+<title>5 Notifications + Sound</title>
 
 <style>
 body {
@@ -33,43 +33,22 @@ button {
 </head>
 <body>
 
-<h1>iPhone App Notifications + Sound</h1>
+<h1>Send 5 Notifications + Sound</h1>
 
 <button id="ask">Enable Notifications</button>
 <br>
-<button id="send">Send Notification</button>
+<button id="send">Send 5 Notifications</button>
 
-<!-- Audio element for sound -->
-<button id="send">Send Notification + Sound</button>
+<!-- Audio element -->
 <audio id="notifSound" src="notification.mp3" preload="auto"></audio>
 
-<script>
-document.getElementById("send").onclick = async () => {
-
-    // Show notification (will still use default sound on iOS)
-    if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.ready;
-        reg.showNotification("Hello!", {
-            body: "Custom sound will play manually",
-            icon: "icon.png"
-        });
-    }
-
-    // Play custom sound manually
-    const audio = document.getElementById("notifSound");
-    audio.play().catch(e => console.log("Sound play blocked:", e));
-};
-</script>
-
-
-    
 <script>
 // Register service worker
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
 
-// Ask for notification permission
+// Ask for permission
 document.getElementById("ask").onclick = async () => {
     const perm = await Notification.requestPermission();
     if (perm === "granted") {
@@ -79,23 +58,28 @@ document.getElementById("ask").onclick = async () => {
     }
 };
 
-// Send notification + play sound
+// Send 5 notifications with sound
 document.getElementById("send").onclick = async () => {
     const reg = await navigator.serviceWorker.ready;
-
-    // Show notification
-    reg.showNotification("Hello from your App!", {
-        body: "This is a local iPhone notification.",
-        icon: "icon.png",
-        badge: "icon.png"
-    });
-
-    // Play sound
     const audio = document.getElementById("notifSound");
-    audio.play().catch(e => console.log("Sound play blocked:", e));
+
+    for (let i = 1; i <= 5; i++) {
+        // Show notification
+        reg.showNotification(`Notification ${i}`, {
+            body: `This is notification number ${i}`,
+            icon: "icon.png",
+            badge: "icon.png"
+        });
+
+        // Play sound
+        audio.currentTime = 0; // restart sound
+        audio.play().catch(e => console.log("Sound blocked", e));
+
+        // Wait 1 second between each notification
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
 };
 </script>
 
 </body>
 </html>
-
