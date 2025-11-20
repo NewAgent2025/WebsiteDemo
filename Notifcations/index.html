@@ -1,50 +1,68 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
 
-<!-- iPhone Fullscreen -->
+<!-- Fullscreen iPhone App -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="MyApp">
-
-<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
-
-<!-- Home Screen Icon -->
 <link rel="apple-touch-icon" href="icon.png">
 
-<title>My iPhone App</title>
+<title>iPhone App Notifications</title>
 
 <style>
 body {
-    background: #151515;
+    background: #121212;
     color: white;
     font-family: Arial;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    text-align: center;
+    padding-top: 80px;
 }
 button {
     padding: 15px 25px;
+    font-size: 20px;
     border: none;
     border-radius: 10px;
-    font-size: 20px;
-    background: #6a4cff;
+    background: #744BFC;
     color: white;
 }
 </style>
 </head>
-
 <body>
-<h1>This runs like an iPhone app</h1>
+
+<h1>iPhone App Local Notifications</h1>
+
+<button id="ask">Enable Notifications</button>
+<br><br>
+<button id="send">Send Test Notification</button>
 
 <script>
-// Register Service Worker for PWA
+// Register service worker
 if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
+
+// Ask for permission
+document.getElementById("ask").onclick = async () => {
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") {
+        alert("Notifications Enabled!");
+    } else {
+        alert("Notifications Denied.");
+    }
+};
+
+// Send a notification
+document.getElementById("send").onclick = async () => {
+    const reg = await navigator.serviceWorker.ready;
+
+    reg.showNotification("Hello from your App!", {
+        body: "This is a local iPhone notification.",
+        icon: "icon.png",
+        badge: "icon.png"
+    });
+};
 </script>
 
 </body>
