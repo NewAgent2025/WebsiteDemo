@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
@@ -9,13 +9,14 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 
-<title>iPhone App Notifications</title>
+<title>iPhone App Notifications + Sound</title>
 
 <style>
 body {
+    margin: 0;
     background: #121212;
     color: white;
-    font-family: Arial;
+    font-family: Arial, sans-serif;
     text-align: center;
     padding-top: 80px;
 }
@@ -26,16 +27,20 @@ button {
     border-radius: 10px;
     background: #744BFC;
     color: white;
+    margin: 10px;
 }
 </style>
 </head>
 <body>
 
-<h1>iPhone App Local Notifications</h1>
+<h1>iPhone App Notifications + Sound</h1>
 
 <button id="ask">Enable Notifications</button>
-<br><br>
-<button id="send">Send Test Notification</button>
+<br>
+<button id="send">Send Notification</button>
+
+<!-- Audio element for sound -->
+<audio id="notifSound" src="notification.mp3" preload="auto"></audio>
 
 <script>
 // Register service worker
@@ -43,7 +48,7 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
 }
 
-// Ask for permission
+// Ask for notification permission
 document.getElementById("ask").onclick = async () => {
     const perm = await Notification.requestPermission();
     if (perm === "granted") {
@@ -53,15 +58,20 @@ document.getElementById("ask").onclick = async () => {
     }
 };
 
-// Send a notification
+// Send notification + play sound
 document.getElementById("send").onclick = async () => {
     const reg = await navigator.serviceWorker.ready;
 
+    // Show notification
     reg.showNotification("Hello from your App!", {
         body: "This is a local iPhone notification.",
         icon: "icon.png",
         badge: "icon.png"
     });
+
+    // Play sound
+    const audio = document.getElementById("notifSound");
+    audio.play().catch(e => console.log("Sound play blocked:", e));
 };
 </script>
 
