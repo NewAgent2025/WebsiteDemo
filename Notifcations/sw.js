@@ -31,7 +31,7 @@ async function showLocalNotification(payload, sourceClient) {
     await self.registration.showNotification(title, options);
     // optionally reply back to client
     if (sourceClient && sourceClient.postMessage) {
-      try { sourceClient.postMessage({type:'notif-shown', tag: options.tag}); } catch(e){}
+      try { sourceClient.postMessage({type:'notif-caf', tag: options.tag}); } catch(e){}
     }
   } catch (e) {
     console.warn('showNotification failed', e);
@@ -56,3 +56,4 @@ self.addEventListener('notificationclick', event => {
     })()
   );
 });
+
